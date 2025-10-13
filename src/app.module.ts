@@ -20,6 +20,8 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
+import { StripeModule } from './modules/stripe/stripe.module';
+import stripeConfig from './modules/stripe/config/stripe.config';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -39,6 +41,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         mailConfig,
         fileConfig,
         googleConfig,
+        stripeConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -74,6 +77,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     MailModule,
     MailerModule,
     HomeModule,
+    StripeModule,
   ],
 })
 export class AppModule {}

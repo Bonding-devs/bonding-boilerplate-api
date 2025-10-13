@@ -19,6 +19,7 @@
     "add:property:to-relational": "hygen property add-to-relational",
     "postadd:property:to-relational": "npm run lint -- --fix",
     "seed:run:relational": "ts-node -r tsconfig-paths/register ./src/database/seeds/relational/run-seed.ts",
+    "stripe:init": "ts-node -r tsconfig-paths/register src/modules/stripe/scripts/setupStripe.ts",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -68,6 +69,7 @@
     "rimraf": "6.0.1",
     "rxjs": "7.8.2",
     "source-map-support": "0.5.21",
+    "stripe": "^17.7.0",
     "swagger-ui-express": "5.0.1",
     "typeorm": "0.3.27"
   },
