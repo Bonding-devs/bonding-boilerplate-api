@@ -65,5 +65,8 @@ STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_API_VERSION=2024-06-20
 
+# Webhook configuration (for automatic setup)
+WEBHOOK_ENDPOINT_URL=https://yourdomain.com/api/stripe/webhook
+
 # Payments module configuration
 PAYMENTS_MODE=both

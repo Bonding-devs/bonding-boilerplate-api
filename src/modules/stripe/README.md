@@ -173,14 +173,35 @@ Set `PAYMENTS_MODE` in your `.env` file to control functionality:
 
 ## 🔗 Webhook Configuration
 
-### Development
+### 🚀 Automatic Setup (Recommended)
+
+The setup script can automatically create webhooks for you! Add this to your `.env`:
+
+```bash
+WEBHOOK_ENDPOINT_URL=https://yourdomain.com/api/stripe/webhook
+```
+
+Then run:
+```bash
+npm run stripe:init
+```
+
+The script will:
+- ✅ Create the webhook endpoint in Stripe
+- ✅ Configure all necessary events automatically  
+- ✅ Generate the webhook secret in `.stripe.generated.env`
+- ✅ Handle duplicate webhook detection
+
+### Manual Setup (Alternative)
+
+#### Development
 For local development, use [Stripe CLI](https://stripe.com/docs/stripe-cli):
 
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-### Production
+#### Production
 1. Go to your [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
 2. Create a new webhook endpoint
 3. Point it to: `https://yourdomain.com/api/stripe/webhook`

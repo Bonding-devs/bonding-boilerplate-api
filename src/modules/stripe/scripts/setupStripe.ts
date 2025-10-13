@@ -127,21 +127,50 @@ async function setupStripe(): Promise<void> {
           logSuccess(`  Created product "${plan.name}" (${product.id})`);
         }
 
-        // Create price for the product
-        const priceData: Stripe.PriceCreateParams = {
-          product: product.id,
-          unit_amount: plan.amount,
-          currency: plan.currency,
-        };
-
-        if (plan.type === 'subscription' && plan.interval) {
-          priceData.recurring = {
-            interval: plan.interval,
+        // Check if there are existing prices for this product
+        const existingPrice = await findPriceForProduct(stripe, product.id, plan.amount, plan.currency, plan.interval);
+        
+        let price: Stripe.Price;
+        
+        if (existingPrice) {
+          logInfo(`  Price for "${plan.name}" already exists with same amount (${existingPrice.id})`);
+          price = existingPrice;
+        } else {
+          // Check if there are any active prices for this product (with different amounts)
+          const allPricesForProduct = await stripe.prices.list({ 
+            product: product.id, 
+            active: true 
+          });
+          
+          // Deactivate old prices if they exist (different amounts)
+          for (const oldPrice of allPricesForProduct.data) {
+            const isMatchingType = plan.interval 
+              ? oldPrice.recurring?.interval === plan.interval
+              : !oldPrice.recurring;
+              
+            if (isMatchingType && oldPrice.unit_amount !== plan.amount) {
+              await stripe.prices.update(oldPrice.id, { active: false });
+              const oldAmount = oldPrice.unit_amount ? `${oldPrice.unit_amount / 100} ${oldPrice.currency}` : 'unknown amount';
+              logWarning(`  Deactivated old price ${oldPrice.id} (was ${oldAmount})`);
+            }
+          }
+          
+          // Create new price for the product
+          const priceData: Stripe.PriceCreateParams = {
+            product: product.id,
+            unit_amount: plan.amount,
+            currency: plan.currency,
           };
-        }
 
-        const price = await stripe.prices.create(priceData);
-        logSuccess(`  Created price for "${plan.name}" (${price.id})`);
+          if (plan.type === 'subscription' && plan.interval) {
+            priceData.recurring = {
+              interval: plan.interval,
+            };
+          }
+
+          price = await stripe.prices.create(priceData);
+          logSuccess(`  Created new price for "${plan.name}" (${price.id}) - ${plan.amount / 100} ${plan.currency}`);
+        }
 
         // Store for .env generation
         const envVarName = `STRIPE_PRICE_${plan.name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
@@ -172,22 +201,62 @@ async function setupStripe(): Promise<void> {
     fs.writeFileSync(generatedEnvPath, envContent);
     logSuccess(`.stripe.generated.env file created with ${Object.keys(generatedPrices).length} price IDs`);
 
-    // Check for webhook configuration
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!webhookSecret) {
-      logWarning('STRIPE_WEBHOOK_SECRET not found in environment variables');
-      logInfo('To enable webhooks:');
-      logInfo('1. Create a webhook endpoint in your Stripe dashboard');
-      logInfo('2. Point it to: https://yourdomain.com/api/stripe/webhook');
-      logInfo('3. Add the webhook secret to your .env file as STRIPE_WEBHOOK_SECRET');
+    logSection('Configuring Webhook Endpoint');
+
+    // Setup webhook automatically using BACKEND_DOMAIN
+    const backendDomain = process.env.BACKEND_DOMAIN;
+    const webhookUrl = backendDomain ? `${backendDomain}/api/stripe/webhook` : null;
+    
+    if (!backendDomain || !webhookUrl) {
+      logWarning('BACKEND_DOMAIN not found in environment variables');
+      logInfo('To enable automatic webhook creation, make sure BACKEND_DOMAIN is set in your .env:');
+      logInfo('BACKEND_DOMAIN=https://yourdomain.com');
+      logInfo('');
+      logInfo('For now, you can create it manually:');
+      logInfo('1. Go to your Stripe Dashboard → Webhooks');
+      logInfo('2. Click "Add endpoint"');
+      logInfo('3. URL: https://yourdomain.com/api/stripe/webhook'); 
+      logInfo('4. Select the events listed in the documentation');
     } else {
-      logSuccess('Webhook secret found in environment variables');
-      
       try {
-        const webhooks = await stripe.webhookEndpoints.list();
-        logInfo(`Found ${webhooks.data.length} webhook endpoint(s) in your Stripe account`);
+        // Check if webhook already exists
+        const existingWebhooks = await stripe.webhookEndpoints.list();
+        const existingWebhook = existingWebhooks.data.find(hook => hook.url === webhookUrl);
+        
+        let webhookEndpoint;
+        
+        if (existingWebhook) {
+          logInfo(`Webhook already exists: ${existingWebhook.id}`);
+          webhookEndpoint = existingWebhook;
+        } else {
+          // Create new webhook
+          logInfo(`Creating webhook endpoint: ${webhookUrl}`);
+          
+          webhookEndpoint = await stripe.webhookEndpoints.create({
+            url: webhookUrl,
+            enabled_events: [
+              'checkout.session.completed',
+              'invoice.payment_succeeded', 
+              'invoice.payment_failed',
+              'customer.subscription.created',
+              'customer.subscription.updated',
+              'customer.subscription.deleted',
+            ],
+          });
+          
+          logSuccess(`Webhook created successfully: ${webhookEndpoint.id}`);
+        }
+        
+        // Add webhook secret to generated env file
+        const webhookEnvContent = `${envContent}\nSTRIPE_WEBHOOK_SECRET=${webhookEndpoint.secret}`;
+        fs.writeFileSync(generatedEnvPath, webhookEnvContent);
+        
+        logSuccess('Webhook secret added to .stripe.generated.env');
+        logInfo('Copy the STRIPE_WEBHOOK_SECRET from .stripe.generated.env to your .env file');
+        
       } catch (error) {
-        logWarning('Could not retrieve webhook information');
+        logError(`Failed to setup webhook: ${error.message}`);
+        logInfo('You can create the webhook manually in your Stripe Dashboard');
       }
     }
 
@@ -202,10 +271,11 @@ async function setupStripe(): Promise<void> {
     });
 
     log('\n📝 Next Steps:', 'bright');
-    log('1. Copy the price IDs from .stripe.generated.env to your .env file');
+    log('1. Copy ALL variables from .stripe.generated.env to your .env file');
+    log('   (including price IDs and webhook secret)');
     log('2. Update your application code to use these price IDs');
-    log('3. Configure webhooks if not already done');
-    log('4. Test your payment flows');
+    log('3. Test your payment flows with Stripe test cards');
+    log('4. Deploy your application and update WEBHOOK_ENDPOINT_URL for production');
 
     log('\n🎉 Stripe setup completed successfully!', 'green');
 
@@ -224,6 +294,36 @@ async function findProductByName(stripe: Stripe, name: string): Promise<Stripe.P
     return products.data.find(product => product.name === name) || null;
   } catch (error) {
     throw new Error(`Failed to search for product "${name}": ${error.message}`);
+  }
+}
+
+async function findPriceForProduct(
+  stripe: Stripe, 
+  productId: string, 
+  unitAmount: number, 
+  currency: string, 
+  interval?: 'day' | 'week' | 'month' | 'year'
+): Promise<Stripe.Price | null> {
+  try {
+    const prices = await stripe.prices.list({ 
+      product: productId, 
+      active: true 
+    });
+    
+    return prices.data.find(price => {
+      // Check basic price properties
+      const basicMatch = price.unit_amount === unitAmount && price.currency === currency;
+      
+      // For subscription prices, also check the interval
+      if (interval) {
+        return basicMatch && price.recurring?.interval === interval;
+      }
+      
+      // For one-time prices, ensure it's not a recurring price
+      return basicMatch && !price.recurring;
+    }) || null;
+  } catch (error) {
+    throw new Error(`Failed to search for price for product "${productId}": ${error.message}`);
   }
 }
 
