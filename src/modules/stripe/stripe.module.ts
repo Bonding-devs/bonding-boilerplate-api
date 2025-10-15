@@ -13,6 +13,14 @@ import {
   UserSubscriptionEntity,
   PlanEntity
 } from './entities';
+import {
+  StripeWebhookService,
+  StripePaymentService,
+  StripeCustomerService,
+  StripeSubscriptionService,
+  StripeTransactionService,
+  StripePlanService
+} from './services';
 
 @Module({
   imports: [
@@ -27,7 +35,30 @@ import {
     ]),
   ],
   controllers: [StripeController, StripeWebhookController],
-  providers: [StripeService, PlanRepository],
-  exports: [StripeService, PlanRepository],
+  providers: [
+    // Main service (now refactored to delegate to specialized services)
+    StripeService,
+    
+    // Specialized services
+    StripeWebhookService,
+    StripePaymentService,
+    StripeCustomerService,
+    StripeSubscriptionService,
+    StripeTransactionService,
+    StripePlanService,
+    
+    // Repository
+    PlanRepository,
+  ],
+  exports: [
+    StripeService,
+    StripeWebhookService,
+    StripePaymentService,
+    StripeCustomerService,
+    StripeSubscriptionService,
+    StripeTransactionService,
+    StripePlanService,
+    PlanRepository,
+  ],
 })
 export class StripeModule {}

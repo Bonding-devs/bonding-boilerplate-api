@@ -10,7 +10,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { StripeService, CreatePaymentSessionData, CreateSubscriptionSessionData } from './stripe.service';
+import { StripeService } from './stripe.service';
+import { CreatePaymentSessionData, CreateSubscriptionSessionData } from './services';
 
 class CreatePaymentSessionDto {
   priceId: string;
