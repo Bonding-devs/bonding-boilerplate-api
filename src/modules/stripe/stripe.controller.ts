@@ -132,17 +132,17 @@ export class StripeController {
     }
   }
 
-  @Get('plans')
-  @ApiOperation({ summary: 'Get available pricing plans' })
+  @Get('prices')
+  @ApiOperation({ summary: 'Get available pricing from Stripe directly' })
   @ApiResponse({
     status: 200,
-    description: 'List of available plans',
+    description: 'List of available prices from Stripe',
   })
   @ApiResponse({
     status: 503,
     description: 'Service unavailable - Stripe not configured',
   })
-  async getPlans() {
+  async getStripePrices() {
     try {
       if (!this.stripeService.isConfigured()) {
         throw new HttpException(
@@ -165,14 +165,14 @@ export class StripeController {
         })),
       };
     } catch (error) {
-      this.logger.error('Failed to get plans', error);
+      this.logger.error('Failed to get Stripe prices', error);
       
       if (error instanceof HttpException) {
         throw error;
       }
       
       throw new HttpException(
-        'Failed to retrieve plans',
+        'Failed to retrieve prices',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -423,6 +423,125 @@ export class StripeController {
       
       throw new HttpException(
         'Failed to create customer',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ===============================
+  // PLAN ENDPOINTS
+  // ===============================
+
+  @Get('plans')
+  @ApiOperation({ summary: 'Get all available plans' })
+  @ApiResponse({
+    status: 200,
+    description: 'Plans retrieved successfully',
+  })
+  async getPlans() {
+    try {
+      const plans = await this.stripeService.getPlans();
+      
+      return {
+        success: true,
+        data: plans,
+        count: plans.length,
+        message: 'Plans retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error('Failed to retrieve plans', error);
+      
+      throw new HttpException(
+        'Failed to retrieve plans',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('plans/subscriptions')
+  @ApiOperation({ summary: 'Get subscription plans only' })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscription plans retrieved successfully',
+  })
+  async getSubscriptionPlans() {
+    try {
+      const plans = await this.stripeService.getPlansByType('subscription');
+      
+      return {
+        success: true,
+        data: plans,
+        count: plans.length,
+        message: 'Subscription plans retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error('Failed to retrieve subscription plans', error);
+      
+      throw new HttpException(
+        'Failed to retrieve subscription plans',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('plans/one-time')
+  @ApiOperation({ summary: 'Get one-time payment plans only' })
+  @ApiResponse({
+    status: 200,
+    description: 'One-time payment plans retrieved successfully',
+  })
+  async getOneTimePlans() {
+    try {
+      const plans = await this.stripeService.getPlansByType('one-time');
+      
+      return {
+        success: true,
+        data: plans,
+        count: plans.length,
+        message: 'One-time payment plans retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error('Failed to retrieve one-time payment plans', error);
+      
+      throw new HttpException(
+        'Failed to retrieve one-time payment plans',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('plans/:id')
+  @ApiOperation({ summary: 'Get a specific plan by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Plan retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Plan not found',
+  })
+  async getPlanById(@Param('id') id: string) {
+    try {
+      const plan = await this.stripeService.getPlanById(id);
+      
+      if (!plan) {
+        throw new HttpException('Plan not found', HttpStatus.NOT_FOUND);
+      }
+      
+      return {
+        success: true,
+        data: plan,
+        message: 'Plan retrieved successfully',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to retrieve plan ${id}`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Failed to retrieve plan',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

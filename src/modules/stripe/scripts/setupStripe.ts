@@ -4,7 +4,9 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import Stripe from 'stripe';
+import { DataSource } from 'typeorm';
 import { STRIPE_PLANS } from '../config/stripe.plans.config';
+import { PlanEntity } from '../entities/plan.entity';
 
 // Colors for console output
 const colors = {
@@ -47,6 +49,18 @@ function logWarning(message: string): void {
 function logInfo(message: string): void {
   log(`ℹ️  ${message}`, 'blue');
 }
+
+// Database configuration
+const dataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.DATABASE_HOST || 'localhost',
+  port: parseInt(process.env.DATABASE_PORT || '5432'),
+  username: process.env.DATABASE_USERNAME || 'root',
+  password: process.env.DATABASE_PASSWORD || 'secret',
+  database: process.env.DATABASE_NAME || 'api',
+  entities: [PlanEntity],
+  synchronize: false,
+});
 
 async function setupStripe(): Promise<void> {
   try {
@@ -97,6 +111,19 @@ async function setupStripe(): Promise<void> {
       process.exit(1);
     }
 
+    // Initialize database connection
+    logInfo('Connecting to database...');
+    try {
+      await dataSource.initialize();
+      logSuccess('Connected to database successfully');
+    } catch (error) {
+      logError('Failed to connect to database');
+      logError(`Error: ${error.message}`);
+      process.exit(1);
+    }
+
+    const planRepository = dataSource.getRepository(PlanEntity);
+
     logSection('Processing Stripe Plans');
 
     const generatedPrices: Record<string, string> = {};
@@ -107,9 +134,10 @@ async function setupStripe(): Promise<void> {
       currency: string;
       productId: string;
       priceId: string;
+      planId: string;
     }> = [];
 
-    for (const plan of STRIPE_PLANS) {
+    for (const [index, plan] of STRIPE_PLANS.entries()) {
       logInfo(`Processing plan: ${plan.name}`);
 
       try {
@@ -175,7 +203,64 @@ async function setupStripe(): Promise<void> {
           logSuccess(`  Created new price for "${plan.name}" (${price.id}) - ${plan.amount / 100} ${plan.currency} - ${planType}`);
         }
 
-        // Store for .env generation
+        // Save or update plan in database
+        const existingPlan = await planRepository.findOne({ 
+          where: { stripePriceId: price.id } 
+        });
+
+        let savedPlan: PlanEntity;
+
+        if (existingPlan) {
+          // Update existing plan
+          await planRepository.update(existingPlan.id, {
+            stripeProductId: product.id,
+            name: plan.name,
+            description: plan.description,
+            amount: plan.amount / 100, // Store in dollars, not cents
+            currency: plan.currency,
+            interval: plan.interval || 'one-time',
+            intervalCount: plan.intervalCount || 1,
+            features: [], // Default empty array
+            isActive: true,
+            sortOrder: index,
+            metadata: {
+              type: plan.interval ? 'subscription' : 'one-time',
+              stripePriceId: price.id,
+              stripeProductId: product.id,
+              planConfig: plan.metadata || {},
+            } as Record<string, any>,
+          });
+          const updatedPlan = await planRepository.findOne({ where: { id: existingPlan.id } });
+          if (!updatedPlan) {
+            throw new Error(`Failed to retrieve updated plan ${existingPlan.id}`);
+          }
+          savedPlan = updatedPlan;
+          logSuccess(`  Updated plan in database (${savedPlan.id})`);
+        } else {
+          // Create new plan
+          savedPlan = await planRepository.save({
+            stripePriceId: price.id,
+            stripeProductId: product.id,
+            name: plan.name,
+            description: plan.description,
+            amount: plan.amount / 100, // Store in dollars, not cents
+            currency: plan.currency,
+            interval: plan.interval || 'one-time',
+            intervalCount: plan.intervalCount || 1,
+            features: [], // Default empty array
+            isActive: true,
+            sortOrder: index,
+            metadata: {
+              type: plan.interval ? 'subscription' : 'one-time',
+              stripePriceId: price.id,
+              stripeProductId: product.id,
+              planConfig: plan.metadata || {},
+            } as Record<string, any>,
+          });
+          logSuccess(`  Saved plan to database (${savedPlan.id})`);
+        }
+
+        // Store for .env generation (mantener compatibilidad)
         const envVarName = `STRIPE_PRICE_${plan.name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
         generatedPrices[envVarName] = price.id;
 
@@ -186,6 +271,7 @@ async function setupStripe(): Promise<void> {
           currency: plan.currency,
           productId: product.id,
           priceId: price.id,
+          planId: savedPlan.id,
         });
 
       } catch (error) {
@@ -309,28 +395,39 @@ async function setupStripe(): Promise<void> {
 
     logSection('Setup Summary');
 
-    log('\n📊 Created/Verified Products and Prices:', 'bright');
-    summary.forEach(item => {
-      log(`\n• ${item.name} (${item.type})`);
-      log(`  Amount: ${item.amount / 100} ${item.currency.toUpperCase()}`);
-      log(`  Product ID: ${item.productId}`);
-      log(`  Price ID: ${item.priceId}`);
-    });
+    if (summary.length === 0) {
+      logWarning('No plans were processed successfully');
+    } else {
+      logSuccess(`Successfully processed ${summary.length} plan(s):`);
+      console.table(summary);
+      
+      logInfo('\n📋 Plans are now stored in your database!');
+      logInfo('You can retrieve them using the /api/stripe/plans endpoint');
+    }
 
     log('\n📝 Next Steps:', 'bright');
-    log('1. Copy ALL variables from .stripe.generated.env to your .env file');
-    log('   (including price IDs and webhook secret)');
-    log('2. Update your application code to use these price IDs');
-    log('3. Test your payment flows with Stripe test cards');
-    log('4. Deploy your application and update WEBHOOK_ENDPOINT_URL for production');
+    log('1. Plans are automatically available via the API');
+    log('2. Frontend can fetch plans from /api/stripe/plans');
+    log('3. Use the plan IDs from database when creating subscriptions');
+    log('4. Plans can be managed through the database or admin interface');
+    log('5. Copy variables from .stripe.generated.env to your .env file if needed');
 
     log('\n🎉 Stripe setup completed successfully!', 'green');
+
+    // Close database connection
+    await dataSource.destroy();
 
   } catch (error) {
     logError(`Setup failed: ${error.message}`);
     if (error.stack) {
       console.error(error.stack);
     }
+    
+    // Make sure to close database connection even on error
+    if (dataSource.isInitialized) {
+      await dataSource.destroy();
+    }
+    
     process.exit(1);
   }
 }
