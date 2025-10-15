@@ -21,8 +21,8 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
   name: 'user',
 })
 export class UserEntity extends EntityRelationalHelper {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   // For "string | null" we need to use String type.
   // More info: https://github.com/typeorm/typeorm/issues/2567
@@ -46,6 +46,9 @@ export class UserEntity extends EntityRelationalHelper {
   @Index()
   @Column({ type: String, nullable: true })
   lastName: string | null;
+
+  @Column({ type: String, nullable: true, unique: true })
+  stripeCustomerId?: string | null;
 
   @OneToOne(() => FileEntity, {
     eager: true,

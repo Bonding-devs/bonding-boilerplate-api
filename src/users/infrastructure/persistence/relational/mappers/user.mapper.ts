@@ -52,8 +52,8 @@ export class UserMapper {
     }
 
     const persistenceEntity = new UserEntity();
-    if (domainEntity.id && typeof domainEntity.id === 'number') {
-      persistenceEntity.id = domainEntity.id;
+    if (domainEntity.id) {
+      persistenceEntity.id = domainEntity.id.toString();
     }
     persistenceEntity.email = domainEntity.email;
     persistenceEntity.password = domainEntity.password;

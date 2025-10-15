@@ -12,7 +12,7 @@ import { Request } from 'express';
 import { StripeService } from './stripe.service';
 
 @ApiTags('stripe-webhooks')
-@Controller('stripe')
+@Controller('v1/stripe')
 export class StripeWebhookController {
   private readonly logger = new Logger(StripeWebhookController.name);
 
@@ -91,23 +91,5 @@ export class StripeWebhookController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  @Post('webhook/test')
-  @ApiOperation({ summary: 'Test webhook endpoint (development only)' })
-  @ApiResponse({
-    status: 200,
-    description: 'Test webhook received',
-  })
-  async testWebhook(@Req() request: Request) {
-    this.logger.log('Test webhook received');
-    this.logger.debug('Request headers:', request.headers);
-    this.logger.debug('Request body:', request.body);
-    
-    return {
-      success: true,
-      message: 'Test webhook received successfully',
-      timestamp: new Date().toISOString(),
-    };
   }
 }

@@ -49,6 +49,14 @@ export class User {
   lastName: string | null;
 
   @ApiProperty({
+    type: String,
+    example: 'cus_1234567890',
+    description: 'Stripe customer ID',
+  })
+  @Expose({ groups: ['me', 'admin'] })
+  stripeCustomerId?: string | null;
+
+  @ApiProperty({
     type: () => FileType,
   })
   photo?: FileType | null;

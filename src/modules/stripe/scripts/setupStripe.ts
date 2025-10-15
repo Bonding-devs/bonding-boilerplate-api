@@ -162,14 +162,17 @@ async function setupStripe(): Promise<void> {
             currency: plan.currency,
           };
 
-          if (plan.type === 'subscription' && plan.interval) {
+          // If the plan has an interval, it's a subscription
+          if (plan.interval) {
             priceData.recurring = {
               interval: plan.interval,
+              interval_count: plan.intervalCount || 1,
             };
           }
 
           price = await stripe.prices.create(priceData);
-          logSuccess(`  Created new price for "${plan.name}" (${price.id}) - ${plan.amount / 100} ${plan.currency}`);
+          const planType = plan.interval ? 'subscription' : 'one-time';
+          logSuccess(`  Created new price for "${plan.name}" (${price.id}) - ${plan.amount / 100} ${plan.currency} - ${planType}`);
         }
 
         // Store for .env generation
@@ -178,7 +181,7 @@ async function setupStripe(): Promise<void> {
 
         summary.push({
           name: plan.name,
-          type: plan.type,
+          type: plan.interval ? 'subscription' : 'one-time',
           amount: plan.amount,
           currency: plan.currency,
           productId: product.id,
@@ -205,7 +208,7 @@ async function setupStripe(): Promise<void> {
 
     // Setup webhook automatically using BACKEND_DOMAIN
     const backendDomain = process.env.BACKEND_DOMAIN;
-    const webhookUrl = backendDomain ? `${backendDomain}/api/stripe/webhook` : null;
+    const webhookUrl = backendDomain ? `${backendDomain}/api/v1/stripe/webhook` : null;
     
     if (!backendDomain || !webhookUrl) {
       logWarning('BACKEND_DOMAIN not found in environment variables');
@@ -215,7 +218,7 @@ async function setupStripe(): Promise<void> {
       logInfo('For now, you can create it manually:');
       logInfo('1. Go to your Stripe Dashboard → Webhooks');
       logInfo('2. Click "Add endpoint"');
-      logInfo('3. URL: https://yourdomain.com/api/stripe/webhook'); 
+      logInfo('3. URL: https://yourdomain.com/api/v1/stripe/webhook'); 
       logInfo('4. Select the events listed in the documentation');
     } else {
       try {
@@ -235,12 +238,56 @@ async function setupStripe(): Promise<void> {
           webhookEndpoint = await stripe.webhookEndpoints.create({
             url: webhookUrl,
             enabled_events: [
+              // Checkout and Sessions
               'checkout.session.completed',
+              
+              // Payment Intents
+              'payment_intent.succeeded',
+              'payment_intent.payment_failed',
+              'payment_intent.canceled',
+              
+              // Charges and Refunds
+              'charge.succeeded',
+              'charge.failed',
+              'charge.refunded',
+              'charge.dispute.created',
+              
+              // Invoices (Critical for subscriptions)
               'invoice.payment_succeeded', 
               'invoice.payment_failed',
+              'invoice.upcoming',
+              'invoice.created',
+              'invoice.finalized',
+              
+              // Subscriptions (Core subscription events)
               'customer.subscription.created',
               'customer.subscription.updated',
               'customer.subscription.deleted',
+              'customer.subscription.trial_will_end',
+              'customer.subscription.paused',
+              'customer.subscription.resumed',
+              
+              // Payment Methods
+              'payment_method.attached',
+              'payment_method.detached',
+              'payment_method.updated',
+              'payment_method.automatically_updated',
+              
+              // Setup Intents
+              'setup_intent.succeeded',
+              'setup_intent.setup_failed',
+              'setup_intent.canceled',
+              
+              // Customers
+              'customer.created',
+              'customer.updated',
+              'customer.deleted',
+              
+              // Products and Prices (for plan changes)
+              'price.created',
+              'price.updated',
+              'product.created',
+              'product.updated'
             ],
           });
           

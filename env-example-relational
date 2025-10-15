@@ -59,14 +59,66 @@ APPLE_APP_AUDIENCE=[]
 
 WORKER_HOST=redis://redis:6379/1
 
-# Stripe credentials
-STRIPE_SECRET_KEY=
-STRIPE_PUBLISHABLE_KEY=
-STRIPE_WEBHOOK_SECRET=
+# ==============================================================================
+# STRIPE PAYMENT CONFIGURATION
+# ==============================================================================
+
+# Stripe API Keys (Required for payment processing)
+# Get these from your Stripe Dashboard: https://dashboard.stripe.com/apikeys
+STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here
+
+# Stripe API Version
+# Recommended to use a specific version for consistency
 STRIPE_API_VERSION=2024-06-20
 
-# Webhook configuration (for automatic setup)
+# Webhook Configuration
+# Generate webhook endpoint secret from Stripe Dashboard
+# Required for secure webhook processing
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Webhook endpoint URL for automatic setup
+# Replace with your actual domain in production
 WEBHOOK_ENDPOINT_URL=https://yourdomain.com/api/stripe/webhook
 
-# Payments module configuration
+# Enable/disable webhook event logging to database
+# Set to "true" to save all webhook events to database for debugging/auditing
+# Set to "false" to disable database logging (only console logs)
+STRIPE_WEBHOOK_LOGGING_ENABLED=false
+
+# Payments Module Configuration
+# Options: "none", "single", "subscription", "both"
+# - none: Disable all payments
+# - single: Only one-time payments
+# - subscription: Only subscription payments  
+# - both: Enable both payment types
 PAYMENTS_MODE=both
+
+# ==============================================================================
+# STRIPE RETRY CONFIGURATION
+# ==============================================================================
+
+# Maximum number of payment retry attempts before taking action
+STRIPE_MAX_RETRY_ATTEMPTS=3
+
+# Action to take when max retries are exceeded: log, cancel, notify, custom
+STRIPE_RETRY_ACTION=log
+
+# ==============================================================================
+# STRIPE PLANS CONFIGURATION (Optional)
+# ==============================================================================
+
+# These are generated automatically by the setupStripe.ts script
+# You can also create them manually in Stripe Dashboard
+STRIPE_PRICE_BASIC_PLAN=price_basic_plan_id
+STRIPE_PRICE_PRO_PLAN=price_pro_plan_id
+STRIPE_PRICE_1000_CREDITS=price_credits_1000_id
+STRIPE_PRICE_2500_CREDITS=price_credits_2500_id
+
+# ==============================================================================
+# DEVELOPMENT CONFIGURATION
+# ==============================================================================
+
+# For local testing with Stripe CLI
+# Use 'stripe listen --forward-to localhost:3000/api/stripe/webhook'
+# STRIPE_WEBHOOK_SECRET=whsec_test_local_secret_from_stripe_cli

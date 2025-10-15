@@ -219,10 +219,18 @@ export class AuthService {
       },
     );
 
-    await this.mailService.userSignUp({
-      to: dto.email,
-      data: {
-        hash,
+    // Email sending disabled - uncomment to enable email confirmation
+    // await this.mailService.userSignUp({
+    //   to: dto.email,
+    //   data: {
+    //     hash,
+    //   },
+    // });
+
+    // For now, auto-activate users without email confirmation
+    await this.usersService.update(user.id, {
+      status: {
+        id: StatusEnum.active,
       },
     });
   }
@@ -340,12 +348,20 @@ export class AuthService {
       },
     );
 
-    await this.mailService.forgotPassword({
-      to: email,
-      data: {
-        hash,
-        tokenExpires,
-      },
+    // Email sending disabled - uncomment to enable forgot password emails
+    // await this.mailService.forgotPassword({
+    //   to: email,
+    //   data: {
+    //     hash,
+    //     tokenExpires,
+    //   },
+    // });
+
+    // For development: log the reset link instead of sending email
+    console.log(`Password reset link for ${email}:`, {
+      hash,
+      tokenExpires,
+      message: 'Use this hash in the reset password endpoint'
     });
   }
 

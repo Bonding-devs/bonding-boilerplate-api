@@ -18,6 +18,19 @@ async function bootstrap() {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   const configService = app.get(ConfigService<AllConfigType>);
 
+  // Configure raw body parsing for Stripe webhooks
+  app.use('/api/v1/stripe/webhook', (req, res, next) => {
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      req.body = Buffer.from(data, 'utf8');
+      next();
+    });
+  });
+
   app.enableShutdownHooks();
   app.setGlobalPrefix(
     configService.getOrThrow('app.apiPrefix', { infer: true }),

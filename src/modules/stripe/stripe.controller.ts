@@ -3,6 +3,8 @@ import {
   Post,
   Get,
   Body,
+  Param,
+  Query,
   HttpException,
   HttpStatus,
   Logger,
@@ -240,5 +242,189 @@ export class StripeController {
         ? 'Stripe service is active and ready'
         : 'Stripe service is disabled or not configured',
     };
+  }
+
+  @Get('user/:userId/payment-methods')
+  @ApiOperation({ summary: 'Get user payment methods' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of user payment methods',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: 503,
+    description: 'Service unavailable - Stripe not configured',
+  })
+  async getUserPaymentMethods(@Param('userId') userId: string) {
+    try {
+      if (!this.stripeService.isConfigured()) {
+        throw new HttpException(
+          'Payment service is not available',
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      // Now userId is a string (UUID), so we can use it directly
+      const paymentMethods = await this.stripeService.getUserPaymentMethods(userId);
+      
+      return {
+        success: true,
+        paymentMethods: paymentMethods.map(pm => ({
+          id: pm.id,
+          type: pm.type,
+          last4: pm.last4,
+          brand: pm.brand,
+          expMonth: pm.expMonth,
+          expYear: pm.expYear,
+          isDefault: pm.isDefault,
+          createdAt: pm.createdAt,
+        })),
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get payment methods for user ${userId}`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Failed to retrieve payment methods',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('user/:userId/transactions')
+  @ApiOperation({ summary: 'Get user transaction history' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of user transactions',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: 503,
+    description: 'Service unavailable - Stripe not configured',
+  })
+  async getUserTransactions(
+    @Param('userId') userId: string,
+    @Query('limit') limit?: string,
+  ) {
+    try {
+      if (!this.stripeService.isConfigured()) {
+        throw new HttpException(
+          'Payment service is not available',
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      const userIdNumber = parseInt(userId, 10);
+      if (isNaN(userIdNumber)) {
+        throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
+      }
+
+      const limitNumber = limit ? parseInt(limit, 10) : 50;
+      if (isNaN(limitNumber) || limitNumber < 1 || limitNumber > 100) {
+        throw new HttpException(
+          'Limit must be a number between 1 and 100',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const transactions = await this.stripeService.getUserTransactions(userId, limitNumber);
+      
+      return {
+        success: true,
+        transactions: transactions.map(tx => ({
+          id: tx.id,
+          stripePaymentIntentId: tx.stripePaymentIntentId,
+          stripeSessionId: tx.stripeSessionId,
+          amount: tx.amount,
+          currency: tx.currency,
+          status: tx.status,
+          transactionType: tx.transactionType,
+          description: tx.description,
+          metadata: tx.metadata,
+          stripeFee: tx.stripeFee,
+          netAmount: tx.netAmount,
+          failureReason: tx.failureReason,
+          processedAt: tx.processedAt,
+          createdAt: tx.createdAt,
+        })),
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get transactions for user ${userId}`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Failed to retrieve transactions',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('user/:userId/customer')
+  @ApiOperation({ summary: 'Create Stripe customer for user' })
+  @ApiResponse({
+    status: 201,
+    description: 'Stripe customer created successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  @ApiResponse({
+    status: 503,
+    description: 'Service unavailable - Stripe not configured',
+  })
+  async createCustomerForUser(
+    @Param('userId') userId: string,
+    @Body() data: { name?: string },
+  ) {
+    try {
+      if (!this.stripeService.isConfigured()) {
+        throw new HttpException(
+          'Payment service is not available',
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      const userIdNumber = parseInt(userId, 10);
+      if (isNaN(userIdNumber)) {
+        throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
+      }
+
+      // Find user (this would normally be done through a user service)
+      // For now, we'll just validate the user exists in our system
+      // You should replace this with proper user validation
+      const user = { id: userIdNumber, email: 'placeholder@example.com' } as any;
+      
+      const customerId = await this.stripeService.createCustomerForUser(user, data.name);
+      
+      return {
+        success: true,
+        customerId,
+        message: 'Stripe customer created successfully',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to create customer for user ${userId}`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Failed to create customer',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

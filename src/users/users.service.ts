@@ -2,6 +2,7 @@ import {
   HttpStatus,
   Injectable,
   UnprocessableEntityException,
+  Logger,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { NullableType } from '../utils/types/nullable.type';
@@ -18,12 +19,16 @@ import { FileType } from '../files/domain/file';
 import { Role } from '../roles/domain/role';
 import { Status } from '../statuses/domain/status';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { StripeService } from '../modules/stripe/stripe.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly usersRepository: UserRepository,
     private readonly filesService: FilesService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -125,7 +130,47 @@ export class UsersService {
       status: status,
       provider: createUserDto.provider ?? AuthProvidersEnum.email,
       socialId: createUserDto.socialId,
+    }).then(async (user) => {
+      // Crear automáticamente un cliente en Stripe después de crear el usuario
+      await this.createStripeCustomerForUser(user);
+      return user;
     });
+  }
+
+  /**
+   * Crea automáticamente un cliente en Stripe para el usuario recién creado
+   */
+  private async createStripeCustomerForUser(user: User): Promise<void> {
+    try {
+      // Solo crear cliente en Stripe si el servicio está configurado y habilitado
+      if (this.stripeService.isConfigured()) {
+        const customerName = user.firstName ? 
+          `${user.firstName} ${user.lastName || ''}`.trim() : 
+          undefined;
+
+        await this.stripeService.createCustomerForUserData({
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        }, customerName);
+        
+        this.logger.log(`Stripe customer created automatically for user ${user.id}`, {
+          userId: user.id,
+          userEmail: user.email,
+        });
+      } else {
+        this.logger.debug(`Stripe not configured - skipping customer creation for user ${user.id}`);
+      }
+    } catch (error) {
+      // No lanzar error si falla la creación del cliente en Stripe
+      // El usuario ya fue creado exitosamente en nuestro sistema
+      this.logger.warn(`Failed to create Stripe customer for user ${user.id}`, {
+        userId: user.id,
+        userEmail: user.email,
+        error: error.message,
+      });
+    }
   }
 
   findManyWithPagination({
