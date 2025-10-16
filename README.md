@@ -1,73 +1,181 @@
-# NestJS REST API boilerplate 🇺🇦
+# Bonding Boilerplate API
 
-[![image](https://github.com/brocoders/nestjs-boilerplate/assets/72293912/197da43e-02f4-4895-8d3e-b7a42a591c26)](https://github.com/new?template_name=nestjs-boilerplate&template_owner=brocoders)
+[![image](https://camo.githubusercontent.com/2093e1eb4bc9b4f31f6b65facf62aa81bfb0630639ed2607cc1006f2656f1cf7/68747470733a2f2f6e6573746a732e636f6d2f696d672f6c6f676f2d736d616c6c2e737667)](https://nestjs.com/)
 
-![github action status](https://github.com/brocoders/nestjs-boilerplate/actions/workflows/docker-e2e.yml/badge.svg)
-[![renovate](https://img.shields.io/badge/renovate-enabled-%231A1F6C?logo=renovatebot)](https://app.renovatebot.com/dashboard)
-[![Static Badge](https://img.shields.io/badge/supported_by-brocoders-d91965?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTMwIiBoZWlnaHQ9IjE4NyIgdmlld0JveD0iMCAwIDEzMCAxODciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF83NzExXzQ4OTEpIj4KPHBhdGggZD0iTTc1Ljk5NjcgNDUuNzUwNkM2NS4xMDg5IDQ2Ljg2MSA1Ny45MjMgNTguNDA5NyA2Mi4yNzgxIDY4Ljg0OEwxMDguNDQyIDE4N0w3My42MDEzIDE1NS4wMTlIMzQuODQwOUMyMC42ODY4IDE1NS4wMTkgOS4zNjM0OSAxNDMuNDcgOS4zNjM0OSAxMjkuMDM0Vjk0LjYxMDVDOS4zNjM0OSA5Mi4xNjc1IDguNDkyNDYgODkuNzI0NSA2Ljc1MDQyIDg3Ljk0NzdMMCA4MS4wNjNMNi43NTA0MiA3NC4xNzgxQzguNDkyNDYgNzIuNDAxNCA5LjM2MzQ5IDY5Ljk1ODQgOS4zNjM0OSA2Ny41MTU0VjMxLjA5MjZDOS4zNjM0OSAxMy43Njk2IDIzLjA4MjEgMCAzOS44NDkyIDBINTguMTQwN0w3NS45OTY3IDQ1Ljc1MDZaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTI1LjY0NiAxMTIuMzc4Vjk0LjgzMjdDMTI1LjY0NiA5My43MjIyIDEyNi4wODEgOTIuNjExOCAxMjYuOTUyIDkxLjcyMzRMMTMwLjAwMSA4OC4zOTIxTDEyNi45NTIgODUuMDYwN0MxMjYuMDgxIDg0LjE3MjQgMTI1LjY0NiA4My4wNjE5IDEyNS42NDYgODEuOTUxNFY2OS43MzY1QzEyNS42NDYgNTYuNDExMSAxMTQuOTc2IDQ1Ljc1MDcgMTAyLjEyOCA0NS43NTA3SDc1Ljk5NzNMMTA1LjYxMiAxMzAuODExQzEwNS42MTIgMTMwLjgxMSAxMTAuNjIgMTMwLjgxMSAxMTAuODM4IDEzMC44MTFDMTE5LjExMyAxMjkuMDM1IDEyNS42NDYgMTIxLjQ4NCAxMjUuNjQ2IDExMi4zNzhaIiBmaWxsPSJ3aGl0ZSIvPgo8L2c%2BCjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzc3MTFfNDg5MSI%2BCjxyZWN0IHdpZHRoPSIxMzAiIGhlaWdodD0iMTg3IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM%2BCjwvc3ZnPgo%3D&logoColor=d91965)](https://brocoders.com/)
-[![Discord Badge](https://img.shields.io/badge/discord-NodeJS_boilerplate-d91965?style=flat&labelColor=5866f2&logo=discord&logoColor=white&link=https://discord.com/channels/520622812742811698/1197293125434093701)](https://discord.com/channels/520622812742811698/1197293125434093701)
+## Descripción
 
-<br />
-<p align="center"><a href="https://discord.com/channels/520622812742811698/1197293125434093701"><img src="https://github.com/brocoders/nestjs-boilerplate/assets/72293912/c9d5fbf0-b56d-46b5-bb30-f96f44764bae" width="300"/></a></p>
-<br />
+`bonding-boilerplate-api` es un boilerplate completo de API REST basado en NestJS, diseñado para ser el punto de partida ideal para proyectos empresariales. Incluye autenticación, autorización, integración con bases de datos, sistema de archivos, internacionalización y mucho más.
 
-## Description <!-- omit in toc -->
+[Documentación completa aquí](/docs/readme.md)
 
-NestJS REST API boilerplate for a typical project
+## Tabla de Contenidos
 
-[Full documentation here](/docs/readme.md)
-
-Demo: <https://nestjs-boilerplate-test.herokuapp.com/docs>
-
-A fully compatible frontend boilerplate: <https://github.com/brocoders/extensive-react-boilerplate>
-
-Belongs to the [bc boilerplates](https://bcboilerplates.com/) ecosystem
-
-<https://github.com/user-attachments/assets/a66f114a-c714-4036-8eeb-20cbf04ae985>
-
-## Table of Contents <!-- omit in toc -->
-
+- [Descripción](#descripción)
+- [Requisitos](#requisitos)
+- [Instalación](#instalación)
+- [Configuración](#configuración)
+- [Uso](#uso)
 - [Features](#features)
-- [Contributors](#contributors)
-- [Support](#support)
+- [Contribuidores](#contribuidores)
+
+## Requisitos
+
+- Node.js v18 o superior
+- NPM v8 o superior
+- Docker (opcional, para desarrollo con contenedores)
+- PostgreSQL (para desarrollo local sin Docker)
+
+## Instalación
+
+### Desarrollo Cómodo (PostgreSQL + TypeORM)
+
+1. Clona el repositorio:
+
+    ```bash
+    git clone --depth 1 https://github.com/Bonding-devs/bonding-boilerplate-api.git mi-proyecto
+    ```
+
+2. Ve a la carpeta del proyecto y copia `env-example-relational` como `.env`:
+
+    ```bash
+    cd mi-proyecto/
+    cp env-example-relational .env
+    ```
+
+3. Cambia `DATABASE_HOST=postgres` a `DATABASE_HOST=localhost` en el archivo `.env`.
+
+4. Cambia `MAIL_HOST=maildev` a `MAIL_HOST=localhost` en el archivo `.env`.
+
+5. Ejecuta los contenedores adicionales:
+
+    ```bash
+    docker compose up -d postgres adminer maildev
+    ```
+
+6. Instala las dependencias:
+
+    ```bash
+    npm install
+    ```
+
+7. Ejecuta las migraciones:
+
+    ```bash
+    npm run migration:run
+    ```
+
+8. Ejecuta las semillas:
+
+    ```bash
+    npm run seed:run:relational
+    ```
+
+9. Inicia la aplicación en modo desarrollo:
+
+    ```bash
+    npm run start:dev
+    ```
+
+10. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+### Ejecución Rápida con Docker
+
+Si deseas una ejecución rápida de la aplicación, puedes usar Docker:
+
+1. Clona el repositorio:
+
+    ```bash
+    git clone --depth 1 https://github.com/Bonding-devs/bonding-boilerplate-api.git mi-proyecto
+    ```
+
+2. Ve a la carpeta del proyecto:
+
+    ```bash
+    cd mi-proyecto/
+    ```
+
+3. Copia el archivo de ejemplo:
+
+    ```bash
+    cp env-example-relational .env
+    ```
+
+4. Levanta todos los servicios:
+
+    ```bash
+    docker compose up -d
+    ```
+
+## Configuración
+
+El proyecto utiliza variables de entorno para su configuración. Las principales variables incluyen:
+
+- `NODE_ENV`: Entorno de ejecución (development, production)
+- `APP_PORT`: Puerto de la aplicación (por defecto 3000)
+- `DATABASE_*`: Configuración de la base de datos
+- `JWT_*`: Configuración de autenticación JWT
+- `MAIL_*`: Configuración del servicio de correo
+- `FILE_DRIVER`: Driver para subida de archivos (local, s3, s3-presigned)
+
+## Uso
+
+### Documentación API
+
+Una vez iniciada la aplicación, puedes acceder a:
+
+- **Swagger Documentation**: [http://localhost:3000/docs](http://localhost:3000/docs)
+- **API Endpoint**: [http://localhost:3000/api](http://localhost:3000/api)
+
+### Comandos Útiles
+
+```bash
+# Desarrollo
+npm run start:dev
+
+# Producción
+npm run build
+npm run start:prod
+
+# Tests
+npm run test
+npm run test:e2e
+
+# Migraciones
+npm run migration:generate
+npm run migration:run
+
+# Semillas
+npm run seed:run:relational
+
+# Linting
+npm run lint
+```
 
 ## Features
 
-- [x] Database. Support [TypeORM](https://www.npmjs.com/package/typeorm) and [Mongoose](https://www.npmjs.com/package/mongoose).
-- [x] Seeding.
-- [x] Config Service ([@nestjs/config](https://www.npmjs.com/package/@nestjs/config)).
-- [x] Mailing ([nodemailer](https://www.npmjs.com/package/nodemailer)).
-- [x] Sign in and sign up via email.
-- [x] Social sign in (Apple, Facebook, Google).
-- [x] Admin and User roles.
-- [x] Internationalization/Translations (I18N) ([nestjs-i18n](https://www.npmjs.com/package/nestjs-i18n)).
-- [x] File uploads. Support local and Amazon S3 drivers.
-- [x] Swagger.
-- [x] E2E and units tests.
-- [x] Docker.
-- [x] CI (Github Actions).
+- [x] **Base de datos**: Soporte para TypeORM (PostgreSQL) y Mongoose (MongoDB)
+- [x] **Seeders**: Sistema de semillas para datos iniciales
+- [x] **Configuración**: Servicio de configuración con @nestjs/config
+- [x] **Correos**: Sistema de envío de correos con nodemailer
+- [x] **Autenticación**: Registro e inicio de sesión por email y redes sociales (Apple, Facebook, Google)
+- [x] **Autorización**: Roles de Administrador y Usuario con sistema de permisos
+- [x] **Internacionalización**: Soporte multi-idioma (I18N) con nestjs-i18n
+- [x] **Subida de archivos**: Soporte para drivers locales y Amazon S3
+- [x] **Documentación**: Swagger/OpenAPI automático
+- [x] **Testing**: Tests E2E y unitarios con Jest
+- [x] **Docker**: Configuración completa para desarrollo y producción
+- [x] **CI/CD**: Integración continua con Github Actions
+- [x] **Stripe**: Integración de pagos lista para usar
+- [x] **Arquitectura Hexagonal**: Separación clara entre dominio e infraestructura
 
-## Contributors
+## Contribuidores
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Shchepotin"><img src="https://avatars.githubusercontent.com/u/6001723?v=4?s=100" width="100px;" alt="Vladyslav Shchepotin"/><br /><sub><b>Vladyslav Shchepotin</b></sub></a><br /><a href="#maintenance-Shchepotin" title="Maintenance">🚧</a> <a href="#doc-Shchepotin" title="Documentation">📖</a> <a href="#code-Shchepotin" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/SergeiLomako"><img src="https://avatars.githubusercontent.com/u/31205374?v=4?s=100" width="100px;" alt="SergeiLomako"/><br /><sub><b>SergeiLomako</b></sub></a><br /><a href="#code-SergeiLomako" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ElenVlass"><img src="https://avatars.githubusercontent.com/u/72293912?v=4?s=100" width="100px;" alt="Elena Vlasenko"/><br /><sub><b>Elena Vlasenko</b></sub></a><br /><a href="#doc-ElenVlass" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="http://brocoders.com"><img src="https://avatars.githubusercontent.com/u/226194?v=4?s=100" width="100px;" alt="Rodion"/><br /><sub><b>Rodion</b></sub></a><br /><a href="#business-sars" title="Business development">💼</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/andihaskel"><img src="https://avatars.githubusercontent.com/u/26433170?v=4" width="100px;" alt="Andrés Haskel"/><br /><sub><b>Andrés Haskel</b></sub></a><br /><sub>Desarrollador Backend, DevOps y Administrador del Proyecto</sub></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/gabrielbursztein2"><img src="https://avatars.githubusercontent.com/u/28164421?v=4" width="100px;" alt="Gabriel Bursztein"/><br /><sub><b>Gabriel Bursztein</b></sub></a><br /><sub>Project manager, Backend Admin, Desarrollador y Administrador del Proyecto</sub></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/DOrazi-Julio"><img src="https://avatars.githubusercontent.com/u/91574046?v=4" width="100px;" alt="Julio D'Orazi"/><br /><sub><b>Julio D'Orazi</b></sub></a><br /><sub>Desarrollador Backend</sub></td>
     </tr>
   </tbody>
 </table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-## Support
-
-If you seek consulting, support, or wish to collaborate, please contact us via [boilerplates@brocoders.com](mailto:boilerplates@brocoders.com). For any inquiries regarding boilerplates, feel free to ask on [GitHub Discussions](https://github.com/brocoders/nestjs-boilerplate/discussions) or [Discord](https://discord.com/channels/520622812742811698/1197293125434093701).
